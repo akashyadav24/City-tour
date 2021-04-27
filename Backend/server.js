@@ -1,21 +1,23 @@
 // Require express and create an instance of it
 var mongoose = require('mongoose');
 var express = require('express');
-var bcrypt = require('bcrypt-nodejs');
+//var bcrypt = require('bcrypt-nodejs');
 var cors = require('cors');
-const { string, number } = require('prop-types');
+//const { string, number } = require('prop-types');
 var app = express();
 
 app.use(cors());
 
-mongoose.connect('mongodb://localhost:27017/project', {useNewUrlParser: true});
+mongoose.connect('mongodb://localhost:27017/project', {useNewUrlParser: true,
+useUnifiedTopology: true,
+useCreateIndex: true,});
 
 // get reference to database
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 
 db.once('open', function() {
-    console.log("Connection Successful!");
+    console.log("Connection Successful!"); 
 });
 
 app.use(express.json());
@@ -31,9 +33,27 @@ var UserSchema = mongoose.Schema({
     Lastname: String,
     Email: String,
     Contact: String,
-    User: String,
+    username: String,
     password: String
   });
+
+  var guideSchema = mongoose.Schema({
+    Firstname: String,
+    Lastname: String,
+    aadhaar: Number,
+    contact:Number,
+    email: String,
+    password: String,
+    address:String,
+    nationality:String,
+    gender:String,
+    education:String,
+    experience:String,
+    languages:String,
+    skills:String,
+    description:String,
+    agreed:String
+  })
   
 
 /*var singinSchema = moo
@@ -46,11 +66,17 @@ UserSchema.methods.generateHash = function(password) {
 
 
 
-  var User = mongoose.model('user', UserSchema, 'users');
+  var User = mongoose.model('users', UserSchema, 'users');
 
   var Signin = mongoose.model('signin', SigninSchema , 'signin');
 
- 
+  var Guide = mongoose.model('guide' , guideSchema, 'guide');
+
+   console.log("here");
+   var a = db.collection('users').count();
+   console.log("a" + a);
+
+
 // on the request to root (localhost:3000/)
  app.get('/', function (req, res) {
     res.send('<b>My</b> first express http server');
@@ -58,32 +84,60 @@ UserSchema.methods.generateHash = function(password) {
 
 app.post('/login',(req,res) => {
     console.log('Body', req.body);
-
     const data =req.body;
-    const user2 = new User(data);
-    user2.save(function (err, User) {
-        if (err) return console.error(err);
-        console.log(`${User.username} saved to bookstore collection.`);
-      });
+    console.log(data.username);
+    console.log(data.password);
+    
+    const collection = db.collection('signin')
+    const ans= collection.count({ "username" : data.username, "password" : data.password});
 
+    ans.then(function(result) {
+        console.log(result);
+
+        
+        if(result>0){
+        res.setHeader("Content-Type", "text/html");
+        res.status(200).send({ "msg" : "you are loged in "});
+        res.end();
+        }
+        else{
+            res.setHeader("Content-Type", "text/html");
+            res.status(200).send({ "msg" : "Wrong user id or password "});
+            res.end();
+        }
+    })
+    
+})
+
+
+app.post('/signin',(req,res) => {
+    console.log('Body', req.body);
+    var datas = req.body
+    console.log('data: ' +datas)
+    
+    const sign1 = new Signin(datas);
+    sign1.save(function (err, ) {
+        if (err) return console.error(err);
+        console.log(` saved to collection.`);
+    });
+    
     res.json({
         msg: "we recevied your data"
     })
 })
 
-app.post('/signin',(req,res) => {
+app.post('/guide',(req,res)=>{
     console.log('Body', req.body);
-
-    var datas = req.body;
-    console.log('data: ' +datas)
-    const sign1 = new Signin(datas);
-    sign1.save(function (err, ) {
-        if (err) return console.error(err);
-        console.log(` saved to bookstore collection.`);
-      });
-
+    var data =req.body;
+    console.log('data: ' +data);
+    const guide1 = new Guide(data);
+    guide1.save(function (err, ) {
+        if(err) return console.error(err);
+        console.log(`saved to collection`)
+    });
+     
     res.json({
-        msg: "we recevied your data"
+        msg: "done"
     })
 })
 
