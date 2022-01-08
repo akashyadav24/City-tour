@@ -6,6 +6,7 @@ var cors = require('cors');
 //const { string, number } = require('prop-types');
 var app = express();
 
+
 app.use(cors());
 
 mongoose.connect('mongodb://localhost:27017/project', {useNewUrlParser: true,
@@ -153,7 +154,8 @@ app.use(function(req, res, next) {
     res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
 });
 
+const port = process.env.port || 5000
 // start the server in the port 3000 !
-app.listen(5000, function () {
-    console.log('Example app listening on port .' + '5000');
+app.listen(port, function () {
+    console.log('Example app listening on port .' + port);
 });
